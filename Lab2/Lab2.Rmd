@@ -1,0 +1,125 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+Statistical Inference Lab1 
+
+Aryan Soltani
+
+
+
+1.
+```{r}
+norm_x <- seq(-3, 3, length = 1000)
+norm_y <- dnorm(norm_x)
+plot(norm_x, norm_y, type = "l", xlab = "x", ylab = "norm(x)", main = "Normal distribution within range [-3, 3]")
+```
+
+2. 
+```{r}
+x <- rnorm(5)
+hist(x)
+x <- rnorm(10)
+hist(x)
+x <- rnorm(100)
+hist(x)
+x <- rnorm(1000)
+hist(x)
+```
+The one with 1000 number of samples has produced the most accurate answer, and the more sample we have the more accurate histogram we would get.
+```{r}
+t_x <- seq(-3, 3, length = 1000)
+colors <- c("red", "green", "blue", "purple")
+df_plots <- c(1, 2, 5, 10)
+plot(t_x, dt(t_x, df_plots[1]), col = colors[1], main = "
+     T-student Plots", ylab = "Y-Axis", xlab = "X-Axis", lwd = 0.5) 
+for(i in 2:4)
+{
+  lines(t_x, dt(t_x, df_plots[i]), col = colors[i]) 
+}
+legend("topleft", c("df = 1", "df = 2", "df = 5", "df = 10"), col = colors, lty = c(1,1,1,1))
+```
+
+
+```{r}
+hist(precip)
+hist(rnorm(80, mean = mean(precip), sd = sd(precip)))
+```
+
+They are similar and the precipitation distribution is very close to normal distribution.
+
+
+```{r}
+norm_y <- rnorm(1000)
+hist(norm_y, breaks = 7)
+hist(norm_y, breaks = 13)
+hist(norm_y, breaks = 30)
+hist(norm_y, breaks = 13, density = 10)
+```
+The one with the density visualized the data better than the others and between the histograms with different bins the one with the more bins has visualized better.
+```{r}
+hist(norm_y, breaks = 13, prob = TRUE, col = "grey", main = "Histogram and its density curve", xlab = "X-axis", 
+     ylab = "Y-axis")
+lines(density(norm_y, adjust = 3), col = "red", lwd = 2)
+legend("topright", c("Histogram", "Density of the histogram"), col = c("grey", "red")
+       , lty = c(1, 1, 1, 1))
+```
+
+```{r}
+whiskers = boxplot(rivers)
+```
+As we can see in the boxplot the rivers dataset is right-skewed.    
+
+```{r}
+whiskers
+```
+The whiskers values is 135 and 1205 and theses can be extract as the stats output of return value of the boxplot
+and yes there are some outliers above the upper whisker and their exact values are [ 1459 1450 1243 2348 3710 2315 2533 1306 1270 1885 1770]
+
+```{r}
+group_1 = rivers[rivers < 500]
+group_2 = rivers[rivers < 1500]
+group_3 = rivers[rivers < 3000]
+group_4 = rivers[rivers >= 3000]
+vec_count_group = c(length(group_1), length(group_2), length(group_3), length(group_4))
+vec_count_group = (vec_count_group * 100) / sum(vec_count_group)
+pie(vec_count_group, col = c("red", "blue", "green", "purple"),  label = paste0(
+  round(vec_count_group) , "%  " , c("tiny", "short", "medium", "long")))
+  
+```
+
+```{r}
+data()
+mtcars
+boxplot(mtcars$disp ~ mtcars$hp)
+```
+It is showing the box for each category within their disp value and the ~ symbol is used for showing the formula.
+```{r}
+library(ggplot2)
+
+
+ggplot(Orange, aes(x = age, y = circumference)) + geom_point()
+```
+```{r}
+ggplot(Orange, aes(x = age, y = circumference)) + geom_point(aes(size = Tree), color = "red")
+```
+
+
+```{r}
+ggplot(Orange, aes(x = age, y = circumference)) + geom_smooth()
+```
+It is using the loess method.
+```{r}
+Orange$AgeGroup = Orange$age
+
+colour <- c("blue", "royalblue4", "green", "springgreen4", "pink")
+
+Orange$AgeGroup[Orange$age <= 250] = "Young"
+Orange$AgeGroup[Orange$age > 250 & Orange$age <= 900] = "Adult"
+Orange$AgeGroup[Orange$age > 900] = "Old"
+
+ggplot(Orange, aes(fill = Tree, x = AgeGroup, y = circumference)) + geom_bar(stat = "identity", position="dodge") + coord_flip() + ggtitle("Growth of Orange Trees") + scale_fill_manual("legend", values = colour)
+``````
+

@@ -1,0 +1,233 @@
+---
+title: "Lab 3 Statistical Inference"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+
+Aryan Soltani
+
+
+1. Call to a Firm in an hour.
+
+2. Number of Traffic accidents.
+
+3. Number of arrivals in a resturant in a day.
+
+
+```{r}
+calculate_ci <- function(sample_data, level_confidence)
+{
+  if(length(sample_data) < 30)
+  {
+    print("Sample data size should be atleast 30 for satysifing the CI conditions")
+  }
+  else 
+  {
+    z <- qnorm((1 - level_confidence)/ 2) * -1 
+    mean_sample <- mean(sample_data)
+    sd_sample <- (sum((sample_data - mean_sample) ^ 2)) / (length(sample_data) - 1)
+    me <- sd_sample / sqrt(length(sample_data))
+    lower_tail <- mean_sample - me * z
+    upper_tail <- mean_sample + me * z
+    print(paste("lower tail is :", lower_tail))
+    print(paste("upper tail is :", upper_tail))
+    return(upper_tail - lower_tail)
+  }
+}
+```
+
+```{r}
+two_tail_z_dist_mean_hyp_test <- function(sample_data, null_value, alpha)
+{
+  if(length(sample_data) < 30)
+  {
+    print("Warning: the data size is not enough for satysfing the CLT condition")
+  }
+  p_value <- t.test(sample_data - null_value, alternative = "two.sided", conf.level = 1 - alpha)$p.value
+  print(paste("P value is: ", p_value))
+  if(p_value < 0.01)
+  {
+    print("The null hypothesis has been rejected")
+  }
+  else
+  {
+    print("Null hypothesis has been accepted.")
+  }
+}
+```
+
+
+```{r}
+
+for(i in 1:10) {
+  sample <- rpois(1000, lambda = i)
+  
+  hist(sample, probability = 1)
+}
+
+
+
+```
+
+For low number of lambda the diagram is mostly right-skwed but the more lambda increase the more it gets similar to symmetric
+diagram.
+
+```{r}
+population <- rnorm(100000, 4)
+hist(population)
+abline(v  = mean(population), col = "red", lty = 2, lwd = 4)
+
+```
+```{r}
+par(mfrow = c(5, 3), mar = c(2, 1.5, 1.5, 1.5))
+for(i in 1:15)
+{
+  new_sample <- sample(population, size = 100)
+  hist(new_sample, main = paste("Sample ", i, "Histogram"))
+}
+
+qqplot(new_sample, population)
+abline(0, 1)
+```
+As we can observe in the plot data lies mostly in the 45 degree line so it is very close to the original distribution
+
+```{r}
+mean_vector <- c()
+for(i in 1:500)
+{
+  new_sample <- sample(population, size = 50)
+  mean_vector <- c(mean_vector, mean(new_sample))
+}
+hist(mean_vector)
+```
+```{r}
+qqnorm(mean_vector)
+qqline(mean_vector)
+qqplot(mean_vector, population)
+abline(0, 1)
+```
+
+As we can see in the qqplot the distribution is very similar to normal and this has happend cause of the CLT because our sample size is less that 10% of the population and the sample size is at least 30. 
+
+If the distrobution were skewed we should sample more. But it is lessly dependent to the distrobution.
+```{r}
+print(paste("The mean is: ", mean(mean_vector)))
+print(paste("The standard deviation is: ", sd(mean_vector)))
+print(paste("Estimation mean and sd are: ", mean(mean_vector), sd(mean_vector) * sqrt(50)))
+
+print(paste("Population statistical points are: ", mean(population), sd(population)))
+```
+
+```{r}
+library(mosaicData)
+heights <- Galton$height
+z <- -1 * qnorm((0.03)/2)
+mean_heights <- mean(heights)
+sd_heights <- sd(heights)
+sd_heights <- sd_heights / sqrt(50)
+count = 0
+for(i in 1:10000)
+{
+  new_sample <- sample(heights, 50)
+  mean_new <- mean(new_sample)
+  end_interval <- mean_new + z * sd_heights
+  start_interval <- mean_new - z * sd_heights
+  if(mean_heights <= end_interval && mean_heights >= start_interval)
+  {
+    count <- count + 1
+  }
+}
+print((count / 10000) * 100)
+```
+The value is very close to 97% and this is because each time the mean will lies in the confidence interval with chance of 97%. Therefore its expection value would be (97/100) * number of samples.
+
+```{r}
+z <- -1 * qnorm((0.1)/2) 
+mean_heights <- mean(heights)
+sd_heights <- sd(heights)
+sd_heights <- sd_heights / sqrt(10)
+count <- 0
+for(i in 1:10000)
+{
+  new_sample <- sample(heights, 10)
+  mean_new <- mean(new_sample)
+  end_interval <- mean_new + z * sd_heights
+  start_interval <- mean_new - z * sd_heights
+  if(mean_heights <= end_interval && mean_heights >= start_interval)
+  {
+    count <- count + 1
+  }
+}
+print(count / 100)
+
+```
+
+```{r}
+sample_for_graph <- sample(heights, 60)
+vector_confident <- seq(0, 1, 0.001)
+len_confident <- c()
+for(confident in vector_confident)
+{
+  new_len <- calculate_ci(sample_for_graph, confident)
+  len_confident <- c(len_confident, new_len)
+}
+plot(vector_confident, len_confident, main = "Diagram confidence interval length based on its confidence level", xlab = "confidence level", ylab = "interval length")
+```
+
+```{r}
+
+outcome_dice <- c(1, 2, 3, 4, 5, 6)
+vector_simulate <- sample(outcome_dice, 15000, replace = TRUE)
+table_simulate <- table(vector_simulate)
+barplot(table_simulate)
+count <- c(table_simulate)
+count <- count / sum(count)
+print(count)
+```
+```{r}
+outcomes <- c("ButterJam", "JustBread")
+sample_toast <- sample(outcomes, 1000, replace = TRUE, prob = c(0.6, 0.4))
+table_toast <- table(sample_toast)
+barplot(table_toast)
+print(table_toast)
+```
+```{r}
+dice <- c(1, 2, 3, 4, 5, 6)
+d1 <- sample(dice, 100000, replace = TRUE)
+d2 <- sample(dice, 100000, replace = TRUE)
+sum_ok <- (d1 + d2) > 8
+tb_dice <- table(sum_ok)
+vec_sum <- c(tb_dice)
+vec_sum <- vec_sum / sum(vec_sum)
+print(vec_sum)
+
+```
+The value is equal to the theoretical one which is 10/36.
+
+```{r}
+library("mosaicData")
+
+Weather$city
+
+Beijing_city <- Weather[Weather$city == 'Beijing', ]
+
+sample_avg_humidity <- Beijing_city$avg_humidity
+t.test(sample_avg_humidity - 50, alternative = "two.sided", conf.level = 0.95)
+```
+The p-value is less than significance level(0.01) thus we could interpret that the null hypothesis is wrong and the humidity is not 50%.
+
+Practicaly it is hard to reject it and this is becuase the practical signifficance is diffrent from the scientific significance level. 
+
+```{r}
+library("MASS")
+t.test(shrimp - 33, alternative = "less", conf.level = 0.95)
+```
+Yes because p-value is less than 0.01 Therefore the alternative hypothesis is correct which is less than 33.
+
+```{r}
+two_tail_z_dist_mean_hyp_test(Beijing_city$avg_humidity, 50, 0.05)
+two_tail_z_dist_mean_hyp_test(shrimp, 33, 0.05)
+```

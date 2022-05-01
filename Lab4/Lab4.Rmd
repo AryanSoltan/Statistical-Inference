@@ -1,0 +1,166 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+---
+
+```{r}
+median_vector <- c()
+for(i in 1:1000)
+{
+  new_sample <- sample(airquality$Solar.R, replace = TRUE)
+  new_sample <- na.omit(new_sample)
+  median_vector <- c(median_vector, median(new_sample))
+}
+quantile_mean <- quantile(median_vector, c(0.25, 0.75))
+print(paste("Confidence Interval left-side: ", quantile_mean[1]))
+print(paste("Confidence Interval right-side: ", quantile_mean[2]))
+```
+
+```{r}
+library(boot)
+
+
+med <- function(data, i)
+{
+  new_sample <- na.omit(data[i])
+  return(median(new_sample))
+}
+
+se = boot(airquality$Solar.R, med, 1000)
+mean_solar <- se$t0
+se
+```
+So the confidence interval is from 205 - 12.3 = 206.7, 205 + 12.3 = 217.3
+The first method is easier to use.
+
+```{r}
+library('COUNT')
+```
+
+
+```{r}
+ships$Risk = ships$incidents > 10
+ships$Risk[ships$Risk == TRUE] = "High"
+ships$Risk[ships$Risk == FALSE] = "Low"
+```
+
+
+```{r}
+table(ships$Risk)
+```
+Yes because the condition of CLT(at least 30 samples) is not satisfied we need simulation.
+
+```{r}
+library('mosaicData')
+plot(Galton$father, Galton$height, xlab = "Father Height", ylab = "Kid height", main = "Father hight and his child height 
+     diagram")
+```
+
+Yes it seems like most of the points are close to a line.
+
+```{r}
+corr_height <- cor(Galton$father, Galton$height)
+print(paste("Correlation height is: ", corr_height))
+```
+No because the correlation coeffiecent is a low number thus we couldn't conclude strong relationship between variables.
+
+```{r}
+lm_height <- lm(Galton$height ~ Galton$father, data = Galton)
+lm_height
+```
+
+This variables define a line which is the best approximation for the relation between response and explanatory variable.
+
+```{r}
+plot(Galton$father, Galton$height, xlab = "Father Height", ylab = "Kid height", main = "Father hight and his child height 
+     diagram")
+abline(39.1104, 0.3994, col = "red", lwd = 3)
+```
+It means when the father height is 0 what would be the kid height(It doesnt show anything most of the time).
+```{r}
+predict(lm(height ~ father, data = Galton), newdata = data.frame(father = c(70, 75, 80)))
+```
+
+```{r}
+lm_height_mother <- lm(height ~ father + mother, data = Galton)
+lm_height_mother
+```
+```{r}
+resid_height <- resid(lm_height_mother)
+hist(resid_height)
+```
+It should be similar to normal distribution
+
+```{r}
+qqnorm(resid_height)
+qqline(resid_height)
+```
+By checking the Linearity of the residuals compare to normal we could check whether it is similar to normal distribution or not.
+
+```{r}
+plot(resid_height ~ Galton$father)
+abline(0, 0)
+plot(resid_height ~ Galton$mother)
+abline(0, 0)
+```
+It checks the Constant Variability conditions for MLR. That is should be randomly distributed around 0.
+
+```{r}
+plot(resid_height)
+```
+
+It checks Independent Residuals in MLR conditions.
+
+```{r}
+lm_three <- lm(Galton$height ~ Galton$father + Galton$mother + Galton$sex)
+summary(lm_three)
+```
+
+Yes it is statistically significant because its p-value as we can see above is less than 0.01
+
+```{r}
+library('MASS')
+nf <- subset(Galton, select = -c(family))
+lm_selection <- lm(height ~ ., data = nf)
+backward_lm <- stepAIC(lm_selection, direction = "backward")
+summary(backward_lm)
+```
+```{r}
+resid_back <- resid(backward_lm)
+hist(resid_back)
+qqnorm(resid_back)
+qqline(resid_back)
+plot(resid_back)
+```
+```{r}
+library('COUNT')
+data('titanic')
+titanic$new_survived[titanic$survived == "yes"] = TRUE
+titanic$new_survived[titanic$survived == "no"] = FALSE
+titanic$new_survived <- factor(titanic$new_survived)
+titanic <- subset(titanic, select = -c(survived))
+titanic_glm <- glm(titanic$new_survived ~ ., data = titanic, family = "binomial")
+summary(titanic_glm)
+```
+```{r}
+person_sample <- data.frame(class = "2nd class", age = "adults", sex = "man")
+predict(titanic_glm, newdata = person_sample, type = "response")
+```
+```{r}
+all_possible <- titanic %>% expand(class = c('1st class', '2nd class', '3rd class'), age, sex)
+all_possible$prob_survive <- predict(titanic_glm, newdata = all_possible, type = "response")
+sorted_possible <- all_possible[order(-1 * all_possible$prob_survive), ]
+sorted_possible
+```
+```{r}
+pred <- predict(titanic_glm, newdata = titanic, type = "response")
+titanic$survive_pred <- pred
+titanic$survive_pred2[titanic$survive_pred > 0.5] = TRUE
+titanic$survive_pred2[titanic$survive_pred < 0.5] = FALSE
+print(paste("precentage correct is: ", sum(titanic$survive_pred2 == titanic$new_survived) / nrow(titanic)))
+```
+No is is not going to be valid because there are alot of different variable in two ships. 
